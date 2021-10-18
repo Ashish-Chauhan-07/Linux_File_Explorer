@@ -354,24 +354,19 @@ void enable_non_canonical(int start, int end)
         {
             if(dir_check[cursor_pos] == 1)
             {
-                //file
-                string dir = prev_stack.top();
-                string pathname = dir + list_comp[cursor_pos];
+                char path[1024];
+                strcpy(path, list_comp[cursor_pos].c_str());
 
-                char path_abs[1024];
-                strcpy(path_abs, pathname.c_str());
-                
-                pid_t pid = fork();
-                if (pid == 0) 
+                int fileOpen = open(path,O_WRONLY);
+
+                dup2(fileOpen, 2);
+                close(fileOpen);
+
+                pid_t processID = fork();
+                if(processID == 0)
                 {
-                    fflush(stdin);
-                    char execName[] = "vi";
-                    char *exec_args[] = {execName, path_abs, NULL};
-                    execv("/usr/bin/vi", exec_args);
-                } 
-                else
-                {
-                    wait(NULL);
+                    execlp("open","open",path,NULL);
+                    exit(0);
                 }
             }
             else if(dir_check[cursor_pos] == 0)
